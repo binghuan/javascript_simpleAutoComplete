@@ -1,6 +1,7 @@
 javascript_simpleAutoComplete
 =============================
 
+link for this page.
 an auto-complete widget on a text &lt;input> with the following requirements:
 
 Implement an auto-complete widget on a text <input> with the
