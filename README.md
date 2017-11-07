@@ -1,6 +1,8 @@
 javascript_simpleAutoComplete
 =============================
 
+link to launch the web app <a href="http://binghuan.github.io/javascript_simpleAutoComplete/autoComplete.html">http://binghuan.github.io/javascript_simpleAutoComplete/autoComplete.html</a>
+
 link for this page.
 an auto-complete widget on a text &lt;input> with the following requirements:
 
