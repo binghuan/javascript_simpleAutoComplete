@@ -28,3 +28,6 @@ If you are interested in my works, please have a visit to my blog.
 http://studiobinghuan.blogspot.tw/ 
 and
 http://bhtalk.blogspot.com
+
+<br/>
+Coding quest from Mozilla.
