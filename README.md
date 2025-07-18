@@ -27,3 +27,6 @@ If you are interested in my other works, please visit my blogs:
 
 <br/>
 This project was created as a coding quest from Mozilla.
+
+# Demo
+![Demo](README/demo.gif)
