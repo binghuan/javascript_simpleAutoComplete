@@ -1,105 +1,86 @@
-// BH_Lin@20130730
-// define element by using.
-var gTZ = null;
-var mSearchField ;
-var mResultText;
-var mSubmiteButton;
 
+// Author: BH_Lin@20130730, optimized 2025
+let gTZ = null;
+let searchField, resultTextDiv, submitButton;
+const TIMEZONE_FILE = document.location.href.replace("autoComplete.html", "") + 'tz.json';
 
-var TIMEZONE_FILE = document.location.href.replace("autoComplete.html", "") + 'tz.json';
-
-// initializing ... 
 function init() {
-	console.log("+ init");
-	mSearchField = document.getElementById('searchField');
-	mSearchField.onkeyup = onSearchTextChange;
-	mResultText = document.getElementById('resultText');
-	mSubmiteButton = document.getElementById('SubmitButton');
+	searchField = document.getElementById('searchField');
+	resultTextDiv = document.getElementById('resultText');
+	submitButton = document.getElementById('SubmitButton');
 
-	if(document.location.protocol.indexOf("http") != -1) {
-		console.log("load tz.json");
+	searchField.addEventListener('input', onSearchTextChange);
+	resultTextDiv.addEventListener('click', onResultClick);
+
+	if (document.location.protocol.startsWith('http')) {
 		loadJSON(TIMEZONE_FILE, function(response) {
 			gTZ = JSON.parse(response);
-			updateResult("");
-		});	
+			updateResult([]);
+		});
 	} else {
-		console.log("load tz.js");
-		gTZ = tzJson;
+		gTZ = typeof tzJson !== 'undefined' ? tzJson : {};
+		updateResult([]);
 	}
-	
+}
+
+function onResultClick(e) {
+	if (e.target && e.target.matches('li[data-city]')) {
+		replaceSearchText(e.target.getAttribute('data-city'));
+	}
 }
 
 function replaceSearchText(text) {
-	console.log("+ replaceSearchText: " + text);
-	mSearchField.value = text;
+	searchField.value = text;
+	onSearchTextChange();
+	searchField.focus();
 }
 
-// update result 
 function updateResult(result) {
-	
 	result.sort();
-	
-	mResultText.innerHTML = "";
-	mResultText.innerHTML += "<ul>";
-	var i;
-	for(i=0; i< result.length; i++) {
-		mResultText.innerHTML += "<li onclick='replaceSearchText(\"" + result[i] + "\")'>" + result[i] + "</li>";		
-	}
-	mResultText.innerHTML += "</ul>";
-	if(result.length < 1) {
-		mSubmiteButton.disabled=true;
+	resultTextDiv.innerHTML = '';
+	if (result.length > 0) {
+		const ul = document.createElement('ul');
+		ul.setAttribute('role', 'listbox');
+		result.forEach(city => {
+			const li = document.createElement('li');
+			li.textContent = city;
+			li.setAttribute('data-city', city);
+			li.setAttribute('tabindex', '0');
+			li.setAttribute('role', 'option');
+			ul.appendChild(li);
+		});
+		resultTextDiv.appendChild(ul);
+		submitButton.disabled = false;
 	} else {
-		mSubmiteButton.disabled=false;
+		submitButton.disabled = true;
 	}
 }
 
-var searchText = "";
-var searchResult = [];
-var dataString="";
-var resultText = "";
 function onSearchTextChange() {
-	console.log("+ onSearchTextChange: _" + mSearchField.value + "_");
-	searchText = mSearchField.value;
-	
-	searchResult = [];
-
-	searchText = searchText.toLowerCase();
-	if(searchText.trim().length < 1) {
-		updateResult(searchResult);
+	const searchText = searchField.value.trim().toLowerCase();
+	let searchResult = [];
+	if (!gTZ || searchText.length < 1) {
+		updateResult([]);
 		return;
 	}
-
-	var continets = Object.keys(gTZ);
-	var co =0,ci =0;
-	dataString = "";
-	for(co=0; co < continets.length; co ++) {
-		for(ci=0; ci < gTZ[continets[co]].length ; ci ++) {
-			dataString = gTZ[continets[co]][ci].city.toLowerCase();
-			if(dataString.indexOf(searchText) != -1) {
-				var hitItem = gTZ[continets[co]][ci];
-				hitItem.continet = continets[co];
-				searchResult.push(hitItem.city);
+	Object.keys(gTZ).forEach(continent => {
+		gTZ[continent].forEach(item => {
+			if (item.city.toLowerCase().includes(searchText)) {
+				searchResult.push(item.city);
 			}
-		}
-	}
-
-	resultText = JSON.stringify(searchResult);
-	console.log("Search Result: ", searchResult.length);
+		});
+	});
 	updateResult(searchResult);
 }
 
 function loadJSON(href, callback) {
-	var xhr = new XMLHttpRequest();
-    xhr.open('GET', href, true);
-    //xhr.responseType = "json";
-    xhr.onerror = callback;
-    xhr.onload = function() {
-      callback(xhr.response);
-    };
-    xhr.send();
+	const xhr = new XMLHttpRequest();
+	xhr.open('GET', href, true);
+	xhr.onerror = function() { callback({}); };
+	xhr.onload = function() {
+		callback(xhr.response);
+	};
+	xhr.send();
 }
 
-window.addEventListener("load", function load(event){
-    window.removeEventListener("load", load, false); //remove listener, no longer needed
-    init();
-},false);
+window.addEventListener('DOMContentLoaded', init);
